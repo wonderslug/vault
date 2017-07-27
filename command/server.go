@@ -35,6 +35,7 @@ import (
 	"github.com/hashicorp/vault/helper/logformat"
 	"github.com/hashicorp/vault/helper/mlock"
 	"github.com/hashicorp/vault/helper/parseutil"
+	"github.com/hashicorp/vault/helper/reload"
 	vaulthttp "github.com/hashicorp/vault/http"
 	"github.com/hashicorp/vault/logical"
 	"github.com/hashicorp/vault/meta"
@@ -61,11 +62,11 @@ type ServerCommand struct {
 	cleanupGuard sync.Once
 
 	reloadFuncsLock *sync.RWMutex
-	reloadFuncs     *map[string][]vault.ReloadFunc
+	reloadFuncs     *map[string][]reload.ReloadFunc
 }
 
 func (c *ServerCommand) Run(args []string) int {
-	var dev, verifyOnly, devHA, devTransactional, devLeasedGeneric bool
+	var dev, verifyOnly, devHA, devTransactional, devLeasedGeneric, devThreeNode bool
 	var configPath []string
 	var logLevel, devRootTokenID, devListenAddress string
 	flags := c.Meta.FlagSet("server", meta.FlagSetDefault)
@@ -77,6 +78,7 @@ func (c *ServerCommand) Run(args []string) int {
 	flags.BoolVar(&devHA, "dev-ha", false, "")
 	flags.BoolVar(&devTransactional, "dev-transactional", false, "")
 	flags.BoolVar(&devLeasedGeneric, "dev-leased-generic", false, "")
+	flags.BoolVar(&devThreeNode, "dev-three-node", false, "")
 	flags.Usage = func() { c.Ui.Output(c.Help()) }
 	flags.Var((*sliceflag.StringFlag)(&configPath), "config", "config")
 	if err := flags.Parse(args); err != nil {
